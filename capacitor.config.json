@@ -1,0 +1,10 @@
+{
+  "appId": "com.julienots.dungeonworkshop",
+  "appName": "Dungeon Workshop",
+  "webDir": "www",
+  "backgroundColor": "#0a0708",
+  "android": {
+    "backgroundColor": "#0a0708",
+    "allowMixedContent": false
+  }
+}

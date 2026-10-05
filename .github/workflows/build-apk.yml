@@ -1,0 +1,114 @@
+name: Compiler l'APK
+
+# Récupère le jeu depuis julienots/DUNGEON-WORKSHOP, le compile, l'emballe avec Capacitor
+# et publie un APK installable (Release GitHub + artefact).
+on:
+  workflow_dispatch:
+    inputs:
+      game_ref:
+        description: "Branche / tag du jeu à compiler"
+        required: false
+        default: "claude/dungeon-workshop-game-p0qwtw"
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [game-updated]
+
+permissions:
+  contents: write
+
+env:
+  GAME_REPO: julienots/DUNGEON-WORKSHOP
+  GAME_REF: ${{ github.event.inputs.game_ref || github.event.client_payload.ref || 'claude/dungeon-workshop-game-p0qwtw' }}
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dépôt APK
+        uses: actions/checkout@v4
+
+      - name: Code du jeu
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.GAME_REPO }}
+          ref: ${{ env.GAME_REF }}
+          path: game
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Compiler le jeu (Vite)
+        working-directory: game
+        run: |
+          npm ci
+          npm test
+          npm run build
+
+      - name: Préparer le contenu web
+        run: |
+          rm -rf www
+          cp -r game/dist www
+          # Les fichiers sont déjà locaux dans l'APK : le service worker PWA est inutile ici
+          rm -f www/sw.js
+
+      - name: Installer Capacitor
+        run: npm install --no-audit --no-fund
+
+      - name: Créer / synchroniser le projet Android
+        run: |
+          [ -d android ] || npx cap add android
+          npx cap sync android
+
+      - name: Icônes et écran de démarrage
+        continue-on-error: true
+        run: |
+          mkdir -p assets
+          cp game/public/icons/icon-512.png assets/icon.png
+          cp game/public/icons/icon-maskable-512.png assets/icon-foreground.png
+          npx @capacitor/assets generate --android \
+            --iconBackgroundColor '#0a0708' --iconBackgroundColorDark '#0a0708' \
+            --splashBackgroundColor '#0a0708' --splashBackgroundColorDark '#0a0708'
+
+      - name: Portrait plein écran + numéro de version
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          sed -i 's/<activity/<activity android:screenOrientation="portrait"/' "$MANIFEST"
+          GRADLE=android/app/build.gradle
+          sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/" "$GRADLE"
+          sed -i "s/versionName \"[^\"]*\"/versionName \"1.0.${{ github.run_number }}\"/" "$GRADLE"
+          grep -n "screenOrientation" "$MANIFEST"
+          grep -n "version" "$GRADLE"
+
+      - name: Compiler l'APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../DungeonWorkshop-1.0.${{ github.run_number }}.apk
+
+      - name: Artefact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DungeonWorkshop-apk
+          path: DungeonWorkshop-*.apk
+
+      - name: Publier la version
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Dungeon Workshop 1.0.${{ github.run_number }}
+          body: |
+            APK compilé automatiquement depuis `${{ env.GAME_REPO }}` (`${{ env.GAME_REF }}`).
+            Téléchargez `DungeonWorkshop-1.0.${{ github.run_number }}.apk` sur votre téléphone Android et ouvrez-le
+            (autorisez l'installation depuis cette source si Android le demande).
+          files: DungeonWorkshop-*.apk
