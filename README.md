@@ -21,3 +21,9 @@ de relancer la compilation à chaque modification (nécessite un jeton d'accès 
 
 L'APK produit est signé avec la clé de débogage (parfait pour installer et tester). Pour Google Play, il faudra
 une clé de signature de publication et un bundle `bundleRelease` (AAB).
+
+## Version 2.0
+
+- Le plugin `@capacitor/app` est inclus : le **bouton retour Android** ferme les fenêtres,
+  revient à l'écran précédent puis à l'accueil (deux appuis rapides depuis l'accueil pour quitter).
+- Les versions publiées sont désormais numérotées `2.0.N`.

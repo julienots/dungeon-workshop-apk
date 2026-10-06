@@ -88,7 +88,7 @@ jobs:
           sed -i 's/<activity/<activity android:screenOrientation="portrait"/' "$MANIFEST"
           GRADLE=android/app/build.gradle
           sed -i "s/versionCode [0-9]*/versionCode ${{ github.run_number }}/" "$GRADLE"
-          sed -i "s/versionName \"[^\"]*\"/versionName \"1.0.${{ github.run_number }}\"/" "$GRADLE"
+          sed -i "s/versionName \"[^\"]*\"/versionName \"2.0.${{ github.run_number }}\"/" "$GRADLE"
           grep -n "screenOrientation" "$MANIFEST"
           grep -n "version" "$GRADLE"
 
@@ -97,7 +97,7 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
-          cp app/build/outputs/apk/debug/app-debug.apk ../DungeonWorkshop-1.0.${{ github.run_number }}.apk
+          cp app/build/outputs/apk/debug/app-debug.apk ../DungeonWorkshop-2.0.${{ github.run_number }}.apk
 
       - name: Artefact
         uses: actions/upload-artifact@v4
@@ -108,10 +108,10 @@ jobs:
       - name: Publier la version
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}
-          name: Dungeon Workshop 1.0.${{ github.run_number }}
+          tag_name: v2.0.${{ github.run_number }}
+          name: Dungeon Workshop 2.0.${{ github.run_number }}
           body: |
             APK compilé automatiquement depuis `${{ env.GAME_REPO }}` (`${{ env.GAME_REF }}`).
-            Téléchargez `DungeonWorkshop-1.0.${{ github.run_number }}.apk` sur votre téléphone Android et ouvrez-le
+            Téléchargez `DungeonWorkshop-2.0.${{ github.run_number }}.apk` sur votre téléphone Android et ouvrez-le
             (autorisez l'installation depuis cette source si Android le demande).
           files: DungeonWorkshop-*.apk

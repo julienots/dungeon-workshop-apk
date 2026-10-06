@@ -1,12 +1,13 @@
 {
   "name": "dungeon-workshop-apk",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "Emballage Android (Capacitor) de Dungeon Workshop",
   "dependencies": {
     "@capacitor/android": "^7.0.0",
     "@capacitor/cli": "^7.0.0",
-    "@capacitor/core": "^7.0.0"
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/app": "^7.0.0"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5"
