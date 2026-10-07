@@ -4,10 +4,10 @@
   "private": true,
   "description": "Emballage Android (Capacitor) de Dungeon Workshop",
   "dependencies": {
-    "@capacitor/android": "^7.0.0",
-    "@capacitor/cli": "^7.0.0",
-    "@capacitor/core": "^7.0.0",
-    "@capacitor/app": "^7.0.0"
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/app": "^8.1.2"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5"
